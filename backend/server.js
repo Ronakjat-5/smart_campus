@@ -1,0 +1,13 @@
+require('dotenv').config();
+const express=require('express'),cors=require('cors'),morgan=require('morgan'),db=require('./config/db');
+const auth=require('./routes/auth'),modules=require('./routes/modules');
+const app=express();
+const allowed=new Set([process.env.CLIENT_ORIGIN,'http://localhost:5173','http://localhost:5174','http://127.0.0.1:5173','http://127.0.0.1:5174'].filter(Boolean));
+app.use(cors({origin:(origin,cb)=>{if(!origin||allowed.has(origin))return cb(null,true);cb(new Error('CORS blocked'))}}));
+app.use(express.json({limit:'1mb'}));app.use(morgan('dev'));
+app.get('/',(_,res)=>res.json({ok:true,name:'Smart University Digital Campus',version:'2.0'}));
+app.get('/api/health',(_,res)=>res.json({ok:true,service:'smart-campus-api'}));
+app.use('/api/auth',auth);app.use('/api',modules);
+app.use((err,_req,res,_next)=>{console.error(err);res.status(500).json({message:'Server error'})});
+app.use((_,res)=>res.status(404).json({message:'Route not found'}));
+db().then(()=>app.listen(process.env.PORT||5050,()=>console.log('Smart Campus API running on http://localhost:'+(process.env.PORT||5050)))).catch(e=>{console.error(e);process.exit(1)});

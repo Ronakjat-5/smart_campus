@@ -1,0 +1,1 @@
+const jwt=require('jsonwebtoken');module.exports=(req,res,next)=>{const h=req.headers.authorization||'';try{req.user=jwt.verify(h.replace('Bearer ',''),process.env.JWT_SECRET);next();}catch(e){res.status(401).json({message:'Unauthorized'});}};

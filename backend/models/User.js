@@ -1,0 +1,3 @@
+const mongoose=require('mongoose'); const bcrypt=require('bcryptjs');
+const schema=new mongoose.Schema({name:String,email:{type:String,unique:true,lowercase:true},password:{type:String,select:false},role:{type:String,enum:['ADMIN','STUDENT','FACULTY','PARENT'],default:'STUDENT'},studentId:String,isActive:{type:Boolean,default:true}},{timestamps:true});
+schema.pre('save',async function(next){if(!this.isModified('password'))return next();this.password=await bcrypt.hash(this.password,10);next();}); schema.methods.matchPassword=function(p){return bcrypt.compare(p,this.password);}; module.exports=mongoose.model('User',schema);
